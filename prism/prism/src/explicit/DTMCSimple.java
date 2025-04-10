@@ -434,4 +434,9 @@ public class DTMCSimple<Value> extends DTMCExplicit<Value> implements ModelSimpl
 			return false;
 		return true;
 	}
+
+
+	public Value getProbability(int s, int t) {
+		return trans.get(s).get(t);
+	}
 }
