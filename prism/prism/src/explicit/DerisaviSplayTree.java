@@ -464,7 +464,7 @@ public class DerisaviSplayTree<Value> extends AbstractBisimulation<Value>{
 
 			this.id = numberOfBlocks++;
 
-			this.elements = new LinkedList<State>();
+			this.elements = new LinkedHashSet<State>();
 
 			this.tree = new SplayTree();
 
