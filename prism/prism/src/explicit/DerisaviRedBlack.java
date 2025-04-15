@@ -1,500 +1,246 @@
 package explicit;
 
-
-
 /*
-
  * Copyright (C)  2020  Zainab Fatmi
-
  *
-
  * This program is free software: you can redistribute it and/or modify
-
  * it under the terms of the GNU General Public License as published by
-
  * the Free Software Foundation, either version 3 of the License, or
-
  * (at your option) any later version.
-
  *
-
  * This program is distributed in the hope that it will be useful,
-
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-
  * GNU General Public License for more details.
-
  *
-
  * You should have received a copy of the GNU General Public License
-
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
  */
 
-
-
-
-
 import java.util.ArrayList;
-
 import java.util.BitSet;
-
 import java.util.HashSet;
-
 import java.util.Iterator;
-
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
-
 import java.util.List;
-
 import java.util.Map;
-
 import java.util.Set;
-
 import java.util.AbstractMap.SimpleEntry;
 
-
-
 import explicit.DTMCSimple;
-
 import explicit.ModelSimple;
-
 import prism.Evaluator;
-
 import prism.PrismComponent;
-
 import prism.PrismException;
 
-
-
-
-
 /**
-
  * Decides which states of a labelled Markov chain have probabilistic bisimilarity 
-
  * distance zero, that is, they are probabilistic bisimilar.  The implementation is 
-
  * based on the algorithm from the paper "Optimal State-Space Lumping in Markov Chains" 
-
  * by Salem Derisavi, Holger Hermanns, and William Sanders.
-
- * 
-
+ *
  * @author Zainab Fatmi
-
  */
-
 public class DerisaviRedBlack<Value> extends AbstractBisimulation<Value>{
-
-	
-
 	public DerisaviRedBlack(PrismComponent parent) throws PrismException {
-
 		super(parent);
-
 	}
-
-	
-
 	public static final double ACCURACY = 1E-5;
-
 	public static final int PRECISION = 3;
-
 	private ArrayList<List<SimpleEntry<Integer, Double>>> transitions;
 
-	
-
 	/**
-
-	 * A class to represent the nodes of a splay tree.  Each node of the tree stores 
-
+	 * A class to represent the nodes of a splay tree.  Each node of the tree stores
 	 * a block and its probability of transitioning to the current splitter.
-
 	 */
-
 	enum Color {
-
-	    RED, BLACK
-
+		RED, BLACK
 	}
-
 	private static class Node {
-
 		private Block block;
-
 		private double probability;
-
 		private Color color;
-
 		private Node parent;
-
 		private Node left; // left child
-
 		private Node right; // right child
 
-		
-
-
-
 		/**
-
 		 * Initializes this node with an empty block, the given probability and the given parent node.
-
-		 * 
-
-		 * @param probability the probability of the states in the block of this node transitioning to the 
-
+		 *
+		 * @param probability the probability of the states in the block of this node transitioning to the
 		 * current splitter
-
 		 * @param parent the parent node
-
 		 */
-
 		public Node(double probability, Node parent) {
-
 			this.block = new Block();
-
 			this.probability = probability;
-
 			this.parent = parent;
-
 			this.left = null;
-
 			this.right = null;
-
 			this.color = Color.RED;
-
 		}
-
-		
-
 		public boolean isRed() {
-
-	        return color == Color.RED;
-
-	    }
-
+			return color == Color.RED;
+		}
 	}
-
-	
 
 	/**
-
-	 * A splay tree.  Each node of the tree stores a block and its probability of 
-
+	 * A splay tree.  Each node of the tree stores a block and its probability of
 	 * transitioning to the current splitter.
-
 	 */
-
 	private static class RedBlackTree {
-
 		private Node root;
-
 		private static final Color RED = Color.RED;
-
-	    private static final Color BLACK = Color.BLACK;
-
+		private static final Color BLACK = Color.BLACK;
 		/**
-
 		 * Initializes this splay tree as empty.
-
 		 */
-
 		public RedBlackTree() {
-
 			this.root = null;
-
 		}
 
-
-
 		/**
-
 		 * Inserts the state in its appropriate position in this splay tree. If the probability
-
 		 * exists in the splay tree, adds the state to the block associated to the probability,
-
 		 * otherwise creates a new node in this splay tree.
-
-		 * 
-
+		 *
 		 * @param probability the probability of the state transitioning to the current splitter
-
 		 * @param state a state
-
 		 */
-
 		public void insert(double probability, State state) {
+			Node currentNode = root;
+			Node parent = null;
+			while (currentNode != null) {
+				parent = currentNode;
+				// Compare probabilities considering the ACCURACY
+				if (Math.abs(probability - currentNode.probability) < ACCURACY) {
+					// Probability is similar, add state to its block
+					currentNode.block.elements.add(state);
+					state.block = currentNode.block;
+					return;
+				} else if (probability < currentNode.probability) {
+					currentNode = currentNode.left;
+				} else {
+					currentNode = currentNode.right;
+				}
+			}
 
-		Node currentNode = root;
+			// If no similar probability node found, create a new node and insert it
+			Node newNode = new Node(probability, parent);
+			newNode.block.elements.add(state);
+			state.block = newNode.block;
 
-		    Node parent = null;
-
-		    while (currentNode != null) {
-
-		        parent = currentNode;
-
-		        // Compare probabilities considering the ACCURACY
-
-		        if (Math.abs(probability - currentNode.probability) < ACCURACY) {
-
-		            // Probability is similar, add state to its block
-
-		            currentNode.block.elements.add(state);
-
-		            state.block = currentNode.block;
-
-		            return;
-
-		        } else if (probability < currentNode.probability) {
-
-		            currentNode = currentNode.left;
-
-		        } else {
-
-		            currentNode = currentNode.right;
-
-		        }
-
-		    }
-
-
-
-		    // If no similar probability node found, create a new node and insert it
-
-		    Node newNode = new Node(probability, parent);
-
-		    newNode.block.elements.add(state);
-
-		    state.block = newNode.block;
-
-
-
-		    // Insert the new node into the tree
-
-		    if (parent == null) {
-
-		        root = newNode;
-
-		    } else if (probability < parent.probability) {
-
-		        parent.left = newNode;
-
-		    } else {
-
-		        parent.right = newNode;
-
-		    }
-
-
-
-		    fixInsert(newNode);
-
+			// Insert the new node into the tree
+			if (parent == null) {
+				root = newNode;
+			} else if (probability < parent.probability) {
+				parent.left = newNode;
+			} else {
+				parent.right = newNode;
+			}
+			fixInsert(newNode);
 		}
 
-
-
 		/**
-
 		 * Moves the given node to the root of the splay tree.
-
-		 * 
-
+		 *
 		 * @param node a node
-
 		 */
-
 		private void fixInsert(Node node) {
-
-	        Node parent, grandParent;
-
-
-
-	        while (node != root && node.parent.isRed()) {
-
-	            parent = node.parent;
-
-	            grandParent = parent.parent;
-
-
-
-	            if (parent == grandParent.left) {
-
-	                Node uncle = grandParent.right;
-
-	                if (uncle != null && uncle.isRed()) {
-
-	                    parent.color = BLACK;
-
-	                    uncle.color = BLACK;
-
-	                    grandParent.color = RED;
-
-	                    node = grandParent;
-
-	                } else {
-
-	                    if (node == parent.right) {
-
-	                        rotateLeft(parent);
-
-	                        node = parent;
-
-	                        parent = node.parent;
-
-	                    }
-
-	                    rotateRight(grandParent);
-
-	                    parent.color = BLACK;
-
-	                    grandParent.color = RED;
-
-	                    node = parent;
-
-	                }
-
-	            } else {
-
-	                Node uncle = grandParent.left;
-
-	                if (uncle != null && uncle.isRed()) {
-
-	                    parent.color = BLACK;
-
-	                    uncle.color = BLACK;
-
-	                    grandParent.color = RED;
-
-	                    node = grandParent;
-
-	                } else {
-
-	                    if (node == parent.left) {
-
-	                        rotateRight(parent);
-
-	                        node = parent;
-
-	                        parent = node.parent;
-
-	                    }
-
-	                    rotateLeft(grandParent);
-
-	                    parent.color = BLACK;
-
-	                    grandParent.color = RED;
-
-	                    node = parent;
-
-	                }
-
-	            }
-
-	        }
-
-	        root.color = BLACK;
-
-	    }
-
-
+			Node parent, grandParent;
+			while (node != root && node.parent.isRed()) {
+				parent = node.parent;
+				grandParent = parent.parent;
+				if (parent == grandParent.left) {
+					Node uncle = grandParent.right;
+					if (uncle != null && uncle.isRed()) {
+						parent.color = BLACK;
+						uncle.color = BLACK;
+						grandParent.color = RED;
+						node = grandParent;
+					} else {
+						if (node == parent.right) {
+							rotateLeft(parent);
+							node = parent;
+							parent = node.parent;
+						}
+						rotateRight(grandParent);
+						parent.color = BLACK;
+						grandParent.color = RED;
+						node = parent;
+					}
+				} else {
+					Node uncle = grandParent.left;
+					if (uncle != null && uncle.isRed()) {
+						parent.color = BLACK;
+						uncle.color = BLACK;
+						grandParent.color = RED;
+						node = grandParent;
+					} else {
+						if (node == parent.left) {
+							rotateRight(parent);
+							node = parent;
+							parent = node.parent;
+						}
+						rotateLeft(grandParent);
+						parent.color = BLACK;
+						grandParent.color = RED;
+						node = parent;
+					}
+				}
+			}
+			root.color = BLACK;
+		}
 
 		/**
-
 		 * Rotates left at the given node.
-
-		 * 
-
+		 *
 		 * @param node a node
-
 		 */
-
 		private void rotateLeft(Node node) {
+			Node child = node.right;
+			node.right = child.left;
+			if (child.left != null) {
+				child.left.parent = node;
+			}
+			child.parent = node.parent;
+			if (node.parent == null) {
+				root = child;
+			} else if (node == node.parent.left) {
+				node.parent.left = child;
+			} else {
+				node.parent.right = child;
+			}
+			child.left = node;
+			node.parent = child;
+		}
 
-	        Node child = node.right;
-
-	        node.right = child.left;
-
-	        if (child.left != null) {
-
-	            child.left.parent = node;
-
-	        }
-
-	        child.parent = node.parent;
-
-	        if (node.parent == null) {
-
-	            root = child;
-
-	        } else if (node == node.parent.left) {
-
-	            node.parent.left = child;
-
-	        } else {
-
-	            node.parent.right = child;
-
-	        }
-
-	        child.left = node;
-
-	        node.parent = child;
-
-	    }
-
-
-
-	    private void rotateRight(Node node) {
-
-	        Node child = node.left;
-
-	        node.left = child.right;
-
-	        if (child.right != null) {
-
-	            child.right.parent = node;
-
-	        }
-
-	        child.parent = node.parent;
-
-	        if (node.parent == null) {
-
-	            root = child;
-
-	        } else if (node == node.parent.right) {
-
-	            node.parent.right = child;
-
-	        } else {
-
-	            node.parent.left = child;
-
-	        }
-
-	        child.right = node;
-
-	        node.parent = child;
-
-	    }
-
+		private void rotateRight(Node node) {
+			Node child = node.left;
+			node.left = child.right;
+			if (child.right != null) {
+				child.right.parent = node;
+			}
+			child.parent = node.parent;
+			if (node.parent == null) {
+				root = child;
+			} else if (node == node.parent.right) {
+				node.parent.right = child;
+			} else {
+				node.parent.left = child;
+			}
+			child.right = node;
+			node.parent = child;
+		}
 	}
-
 
 	/**
 	 * A class to represent the blocks of the partition.
 	 */
 	private static class Block {
 		private static int numberOfBlocks = 0;
-		
 		private int id; // for easier hashCode and equals methods
 		private LinkedHashSet<State> elements;
 		private RedBlackTree tree;
@@ -536,7 +282,7 @@ public class DerisaviRedBlack<Value> extends AbstractBisimulation<Value>{
 
 		/**
 		 * Initializes this state with the given index.
-		 * 
+		 *
 		 * @param id the non-negative ID of the state
 		 */
 		public State(int id) {

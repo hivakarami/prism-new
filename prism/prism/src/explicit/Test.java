@@ -1,6 +1,31 @@
 package explicit;
 
 import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+
+import edu.jas.structure.Value;
+import prism.PrismComponent;
+import prism.PrismException;
+
+public class Test {
+
+	public static final int MAXnumberOfStates = (int) 2000;
+	public static final int MAXnumberOfLabels = 1;
+
+	public static DTMCSimple<Double> GenerateModel(int numberOfStates){
+
+		Random random = new Random();
+		DTMCSimple<Double> dtmcSimple = new DTMCSimple<Double>(numberOfStates);
+
+		double threshold = 2 * Math.log(numberOfStates) / numberOfStates;
+		for (int source = 0; source < numberOfStates; source++) {
+			double outgoing = 0; // number of outgoing transitions of source
+package explicit;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashSet;
@@ -221,4 +246,113 @@ public class Buchholz<Value> extends AbstractBisimulation<Value> {
 		}
 		return bisimilar;
 	}
+}
+
+
+			double[] probability = new double[numberOfStates];
+
+			for (int target = 0; target < numberOfStates; target++) {
+				if (random.nextDouble() < threshold) {
+					probability[target] = 1;
+					outgoing++;
+				}
+			}
+			if (outgoing > 0) {
+				for (int target = 0; target < numberOfStates; target++) {
+
+					if(probability[target]/outgoing > 0.0) {
+						dtmcSimple.setProbability(source, target, probability[target]/outgoing);
+					}
+
+				}
+			} else {
+				dtmcSimple.setProbability(source, source, 1.0);
+			}
+		}
+		return dtmcSimple;
+	}
+
+	public static List<BitSet> Generatelabels(int numberOfStates, int numberOfLabels){
+		Random random = new Random();
+		List<BitSet> propBSs = new ArrayList<>();
+		for(int s = 0; s < numberOfLabels; s++) {
+			BitSet bitSet = new BitSet(numberOfStates);
+			propBSs.add(bitSet);
+		}
+
+		for(int s = 0; s < numberOfStates; s++) {
+			int mask = random.nextInt((1<<numberOfLabels));
+			for(int i = 0; i < numberOfLabels; i++) {
+				if(((mask >> i)&1) == 1) {
+					propBSs.get(i).set(s, true);
+				}else {
+					propBSs.get(i).set(s, false);
+				}
+			}
+		}
+
+		return propBSs;
+	}
+
+
+	private static void RandomModel() {
+		try {
+
+			PrismComponent parent = new PrismComponent() {};
+
+			Random random = new Random();
+			int numberOfStates = random.nextInt(MAXnumberOfStates) + 1;
+			int numberOfLabels = random.nextInt(MAXnumberOfLabels) + 1;
+			DTMCSimple<Double> dtmc = GenerateModel(numberOfStates);
+			List<BitSet> propBSs = Generatelabels(numberOfStates, numberOfLabels);
+
+
+			Buchholz<Double> buchholz = new Buchholz<>(parent);
+			boolean[] Buchholz = buchholz.bisimilar(dtmc, propBSs);
+
+			Bisimulation<Double> bisimilation = new Bisimulation<>(parent);
+			boolean[] Bisimilation = bisimilation.bisimilar(dtmc, propBSs);
+
+			Bisimulation<Double> derisaviSplay = new DerisaviSplayTree<>(parent);
+			boolean[] DerisaviSplayTree = derisaviSplay.bisimilar(dtmc, propBSs);
+
+			Bisimulation<Double> derisaviRB = new DerisaviRedBlack<>(parent);
+			boolean[] DerisaviRedBlack = derisaviRB.bisimilar(dtmc, propBSs);
+
+			Bisimulation<Double> valmari = new Valmari<>(parent);
+			boolean[] Valmari = valmari.bisimilar(dtmc, propBSs);
+
+
+			// compare the result
+			for(int i = 0; i < numberOfStates; i++) {
+				for(int j = 0; j < numberOfStates; j++) {
+					if(
+							Buchholz[i*numberOfStates + j] !=  Bisimilation[i*numberOfStates + j] ||
+									Buchholz[i*numberOfStates + j] !=  DerisaviSplayTree[i*numberOfStates + j] ||
+									Buchholz[i*numberOfStates + j] !=  DerisaviRedBlack[i*numberOfStates + j] ||
+									Buchholz[i*numberOfStates + j] !=  Valmari[i*numberOfStates + j] ) {
+
+						System.out.println("Erorr!! " + i + " " + j + " " + Buchholz[i*numberOfStates + j] + " " + Bisimilation[i*numberOfStates + j]);
+						System.out.println(dtmc.toString());
+						System.exit(0);
+					}
+
+				}
+			}
+
+			System.out.println("okay");
+
+		} catch (PrismException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+	public static void main(String[] args) {
+
+		for(int i = 0; i < 10000; i++)
+			RandomModel();
+	}
+
+
 }
