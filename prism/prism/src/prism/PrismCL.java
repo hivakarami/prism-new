@@ -2078,8 +2078,24 @@ public class PrismCL implements PrismModelListener
 				// enable bisimulation minimisation before model checking (hidden option)
 				else if (sw.equals("bisim")) {
 					prism.setDoBisim(true);
+					prism.setAlgorithm("bisim");
 				}
-
+				else if (sw.equals("Buchholz")) {
+						prism.setDoBisim(true);
+						prism.setAlgorithm("explicit.Buchholz");
+				}
+				else if (sw.equals("DerisaviSplayTree")) {
+						prism.setDoBisim(true);
+						prism.setAlgorithm("explicit.DerisaviSplayTree");
+				}
+				else if (sw.equals("DerisaviRedBlack")) {
+						prism.setDoBisim(true);
+						prism.setAlgorithm("explicit.DerisaviRedBlack");
+				}
+				else if (sw.equals("Valmari")) {
+						prism.setDoBisim(true);
+						prism.setAlgorithm("explicit.Valmari");
+				}
 				// Other switches - pass to PrismSettings
 
 				else {

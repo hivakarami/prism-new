@@ -39,6 +39,10 @@ import java.util.Vector;
 
 import explicit.rewards.ConstructRewards;
 import explicit.rewards.Rewards;
+import explicit.Buchholz;
+import explicit.DerisaviSplayTree;
+import explicit.DerisaviRedBlack;
+import explicit.Valmari;
 import io.DotExporter;
 import io.DRNExporter;
 import io.MatlabExporter;
@@ -128,7 +132,7 @@ public class StateModelChecker extends PrismComponent
 
 	// Do bisimulation minimisation before model checking?
 	protected boolean doBisim = false;
-
+	protected String algorithm;
 	// Do topological value iteration?
 	protected boolean doTopologicalValueIteration = false;
 
@@ -250,6 +254,7 @@ public class StateModelChecker extends PrismComponent
 		setGenStrat(other.getGenStrat());
 		setRestrictStratToReach(other.getRestrictStratToReach());
 		setDoBisim(other.getDoBisim());
+                setAlgorithm(other.getAlgorithm());
 		setDoIntervalIteration(other.getDoIntervalIteration());
 		setDoPmaxQuotient(other.getDoPmaxQuotient());
 	}
@@ -344,6 +349,10 @@ public class StateModelChecker extends PrismComponent
 		this.doBisim = doBisim;
 	}
 
+        public void setAlgorithm(String algo) 
+        {
+                this.algorithm = algo;
+        }
 	/**
 	 * Specify whether or not to do topological value iteration.
 	 */
@@ -445,6 +454,11 @@ public class StateModelChecker extends PrismComponent
 	public boolean getDoBisim()
 	{
 		return doBisim;
+	}
+
+	public String getAlgorithm()
+	{
+		return this.algorithm;
 	}
 
 	/**
@@ -575,14 +589,30 @@ public class StateModelChecker extends PrismComponent
 			ArrayList<String> propNames = new ArrayList<String>();
 			ArrayList<BitSet> propBSs = new ArrayList<BitSet>();
 			Expression exprNew = checkMaximalPropositionalFormulas(model, expr.deepCopy(), propNames, propBSs);
-			Bisimulation<Value> bisim = new Bisimulation<>(this);
+			Bisimulation<Value> bisim;
+
+			if (this.algorithm.equals("explicit.Buchholz")) {
+				bisim = new Buchholz<>(this);
+			}
+			else if (this.algorithm.equals("explicit.DerisaviSplayTree")) {
+				bisim = new DerisaviSplayTree<>(this);
+			}
+			else if (this.algorithm.equals("explicit.DerisaviRedBlack")) {
+				bisim = new DerisaviRedBlack<>(this);
+			}
+			else if (this.algorithm.equals("explicit.Valmari")) {
+				bisim = new Valmari<>(this);
+			}
+			else {
+				bisim = new Bisimulation<>(this);
+			}
+
 			model = bisim.minimise(model, propNames, propBSs);
 			mainLog.println("Modified property: " + exprNew);
 			expr = exprNew;
 			//model.exportToPrismExplicitTra("bisim.tra");
 			//model.exportStates(Prism.EXPORT_PLAIN, modelInfo.createVarList(), new PrismFileLog("bisim.sta"));
 		}
-
 		// Do model checking and store result vector
 		timer = System.currentTimeMillis();
 		// check expression for all states (null => statesOfInterest=all)
