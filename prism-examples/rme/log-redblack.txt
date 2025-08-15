@@ -1,0 +1,3 @@
+Building PRISM model
+Building PRISM model
+Minimisation with DerisaviRedBlack: 3377344 to 54706 States 

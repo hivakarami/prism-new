@@ -1,0 +1,7 @@
+cdp_prism_mrmc.sh : 
+runs PRISM,without - PRISM,standard - MRMC,without - MRMC,standard and puts the result in /tmp/dir/time.csv 
+num_iterations = number of times to run the experiments
+test = if true it will output the result for testing the correctness
+
+buchholz_cdp.sh :
+runs Buchholz for all combinations and puts the result in /tmp/dir/time_buchholz.csv 

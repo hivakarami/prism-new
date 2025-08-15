@@ -1,0 +1,19 @@
+Create MRMC files
+prism rme.pm rme.pctl -exportmrmc -exportlabels /tmp/rme.lab -exporttrans /tmp/rme.tra
+
+Run MRMC
+
+mrmc dtmc /tmp/rme.tra /tmp/rme.lab < input
+
+
+
+
+
+Create PRISM files
+prism rme.pm rme.pctl -exportlabels /tmp/rme.lab -exporttrans /tmp/rme.tra
+
+Run PRISM without lumping
+prism -explicit -importtrans rme.tra -importlabels rme.lab rme.pctl -dtmc > output-without
+
+Run PRISM with lumping
+prism -explicit -bisim -importtrans /tmp/rme.tra -importlabels /tmp/rme.lab rme.pctl -dtmc > output-without

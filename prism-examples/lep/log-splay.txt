@@ -1,0 +1,16 @@
+Building PRISM model
+Minimisation: 55 to 10 States 
+Building PRISM model
+Minimisation: 782 to 10 States 
+Building PRISM model
+Minimisation: 12302 to 10 States 
+Building PRISM model
+Minimisation: 162 to 12 States 
+Building PRISM model
+Minimisation: 5122 to 12 States 
+Building PRISM model
+Minimisation: 38882 to 12 States 
+Building PRISM model
+Minimisation: 163842 to 12 States 
+Building PRISM model
+Minimisation: 196622 to 10 States 

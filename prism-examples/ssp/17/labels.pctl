@@ -1,0 +1,2 @@
+// label - stable configurations (1 token)
+label "stable" = num_tokens=1;

@@ -1,0 +1,7 @@
+To run the experiments -> ./rme_time.sh
+Info about PRISM model : /tmp/rme/$dir/prism-model-output
+Info about MRMC model : /tmp/rme/$dir/mrmc-model-output
+To see the results -> ./rme_output_data.sh ---> "/tmp/rme/$dir/time.csv"
+To compare mrmc vs prism states -> ./check_states.sh
+
+

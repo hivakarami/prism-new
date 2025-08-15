@@ -1,0 +1,16 @@
+Building PRISM model
+Minimisation with Valmari: 55 to 10 States 
+Building PRISM model
+Minimisation with Valmari: 782 to 10 States 
+Building PRISM model
+Minimisation with Valmari: 12302 to 10 States 
+Building PRISM model
+Minimisation with Valmari: 162 to 12 States 
+Building PRISM model
+Minimisation with Valmari: 5122 to 12 States 
+Building PRISM model
+Minimisation with Valmari: 38882 to 12 States 
+Building PRISM model
+Minimisation with Valmari: 163842 to 12 States 
+Building PRISM model
+Minimisation with Valmari: 196622 to 10 States 

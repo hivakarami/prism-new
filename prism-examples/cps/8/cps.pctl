@@ -1,0 +1,4 @@
+label "phi" = !(s>1 & a=1);
+label "psi" = (s=1) & (a=1);
+
+P>0["phi" U<=1010 "psi"]

@@ -1,0 +1,4 @@
+P{>0.5}[ notEnter1 U[0,1000] enter1 ]
+
+$STATE[1]
+quit

@@ -1,0 +1,17 @@
+Create MRMC files
+prism ssp.pm labels.pctl -exportmrmc -exportlabels /tmp/ssp.lab -exporttrans /tmp/ssp.tra
+
+Run MRMC
+
+mrmc dtmc /tmp/ssp.tra /tmp/ssp.lab
+
+Create PRISM files
+prism ssp.pm labels.pctl -exportlabels ssp.lab -exporttrans ssp.tra
+
+Run PRISM without lumping
+prism -explicit -importtrans ssp.tra -importlabels ssp.lab ssp.pctl -dtmc > output-without
+
+Run PRISM with lumping
+prism -explicit -bisim -importtrans ssp.tra -importlabels ssp.pctl -dtmc > output-without
+
+

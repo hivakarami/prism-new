@@ -1,0 +1,7 @@
+Building PRISM model
+Minimisation: 2368 to 1123 States 
+Building PRISM model
+Minimisation: 27600 to 5224 States 
+Building PRISM model
+Minimisation: 308800 to 18501 States 
+Building PRISM model

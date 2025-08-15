@@ -1,0 +1,10 @@
+Building PRISM model
+Minimisation with DerisaviRedBlack: 2368 to 1123 States 
+Building PRISM model
+Minimisation with DerisaviRedBlack: 27600 to 5224 States 
+Building PRISM model
+Minimisation with DerisaviRedBlack: 308800 to 18501 States 
+Building PRISM model
+Building PRISM model
+Building PRISM model
+Minimisation with DerisaviRedBlack: 3377344 to 54706 States 

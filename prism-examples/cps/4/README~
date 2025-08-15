@@ -1,0 +1,21 @@
+Create MRMC files
+prism cps.pm cps.pctl -exportmrmc -exportlabels cps.lab -exporttrans temp.tra
+
+Convert temp.tra, which contains rates, to cps.tra, which contains probabilities
+java CTMCtoDTMC mrmc 4/temp.tra 4/cps.tra 8
+
+Move MRMC files
+
+Create PRISM files
+prism cps.pm cps.pctl -exportlabels cps.lab -exporttrans temp.tra
+
+Convert temp.tra, which contains rates, to cps.tra, which contains probabilities
+java CTMCtoDTMC prism 4/temp.tra 4/cps.tra 8
+
+Run PRISM without lumping
+prism -explicit -importtrans cps.tra -importlabels cps.lab cps-without-labels.pctl -dtmc > output-without
+
+Run PRISM with lumping
+prism -explicit -bisim -importtrans cps.tra -importlabels cps.lab cps-without-labels.pctl -dtmc > output-without
+
+
